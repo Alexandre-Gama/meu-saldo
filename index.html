@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14171C">
+<meta name="description" content="Veja quanto sobra depois da renda e das despesas, tudo salvo no seu telefone, sem internet.">
+<title>Meu Saldo</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Meu Saldo">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand">✦ Meu Saldo</span>
+  <button id="btn-reset" class="icon-btn" title="Limpar tudo" aria-label="Limpar tudo">⟲</button>
+</header>
+
+<main>
+  <section class="receipt" id="receipt">
+    <p class="eyebrow">saldo disponível</p>
+    <p class="balance" id="balance-amount">R$ 0,00</p>
+    <div class="dashed"></div>
+    <div class="receipt-row">
+      <span>Renda</span>
+      <span id="total-income">R$ 0,00</span>
+    </div>
+    <div class="receipt-row">
+      <span>Despesas</span>
+      <span id="total-expense">R$ 0,00</span>
+    </div>
+  </section>
+
+  <section class="ledger" data-type="income">
+    <div class="ledger-header">
+      <span class="ledger-title">renda</span>
+      <button class="add-btn" data-type="income" aria-label="Adicionar renda">+</button>
+    </div>
+    <ul class="ledger-list" id="list-income"></ul>
+    <p class="empty-hint" id="empty-income">nenhum lançamento ainda</p>
+  </section>
+
+  <section class="ledger" data-type="expense">
+    <div class="ledger-header">
+      <span class="ledger-title">despesas</span>
+      <button class="add-btn" data-type="expense" aria-label="Adicionar despesa">+</button>
+    </div>
+    <ul class="ledger-list" id="list-expense"></ul>
+    <p class="empty-hint" id="empty-expense">nenhum lançamento ainda</p>
+  </section>
+
+  <p class="footnote">tudo salvo neste aparelho — funciona sem internet</p>
+</main>
+
+<div class="sheet-overlay" id="sheet-overlay">
+  <form class="sheet" id="sheet-form">
+    <p class="sheet-title" id="sheet-title">Nova renda</p>
+    <label class="field">
+      <span>Descrição</span>
+      <input type="text" id="input-desc" placeholder="Ex: Salário" required maxlength="40" autocomplete="off">
+    </label>
+    <label class="field">
+      <span>Valor</span>
+      <input type="text" id="input-value" placeholder="0,00" required inputmode="decimal" autocomplete="off">
+    </label>
+    <div class="sheet-actions">
+      <button type="button" class="btn btn-ghost" id="btn-cancel">Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="btn-confirm">Adicionar</button>
+    </div>
+  </form>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
