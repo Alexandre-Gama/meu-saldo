@@ -99,32 +99,6 @@ main {
   pointer-events: none;
 }
 
-.balance-card-top {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-.account-label {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.account-chip {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(243, 239, 228, 0.75);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 4px 9px;
-  border-radius: 999px;
-}
-
 .eyebrow {
   position: relative;
   margin: 0;
