@@ -62,7 +62,7 @@ export default function App() {
   return (
     <>
       <header className="topbar">
-        <span className="brand">✦ Meu Saldo</span>
+        <span className="brand">Meu Saldo</span>
         <button className="icon-btn" title="Limpar tudo" aria-label="Limpar tudo" onClick={handleReset}>⟲</button>
       </header>
 
@@ -80,12 +80,10 @@ export default function App() {
         <Ledger
           type="expense"
           title="despesas"
-          items={state.expenses}
+          items={[...state.expenses].reverse()}
           onAdd={() => openAdd("expense")}
           onEdit={(item) => openEdit("expense", item)}
         />
-
-        <p className="footnote">tudo salvo neste aparelho — funciona sem internet</p>
       </main>
 
       <EntrySheet
