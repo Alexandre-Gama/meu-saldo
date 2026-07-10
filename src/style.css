@@ -1,14 +1,16 @@
 :root {
-  --ink: #14171C;
-  --ink-soft: #1E2229;
-  --ink-line: #2B303A;
-  --paper: #FBF7EE;
-  --paper-line: #D9D0BC;
+  --ink: #0E1116;
+  --ink-soft: #171B22;
+  --ink-line: #262B34;
   --text: #F3EFE4;
-  --text-muted: #8B9099;
+  --text-muted: #8B92A0;
   --income: #4FB37A;
-  --expense: #D9694F;
-  --accent: #E8A33D;
+  --expense: #E15B4F;
+  --accent: #4F8FE8;
+
+  --card-from: #16233F;
+  --card-via: #1B2C52;
+  --card-to: #241947;
 
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", "IBM Plex Mono", Menlo, Consolas, monospace;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -75,68 +77,126 @@ main {
   padding: 4px 20px 32px;
 }
 
-/* --- Receipt / balance card, the signature element --- */
-.receipt {
+/* --- Balance card, styled like a bank account / debit card --- */
+.balance-card {
   position: relative;
-  background: var(--paper);
-  color: var(--ink);
-  border-radius: 6px;
-  padding: 30px 24px 22px;
+  background: linear-gradient(135deg, var(--card-from), var(--card-via) 55%, var(--card-to));
+  color: var(--text);
+  border-radius: 20px;
+  padding: 22px 22px 20px;
   margin: 18px 0 28px;
-  text-align: center;
+  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
 }
 
-.receipt::before,
-.receipt::after {
+.balance-card::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 14px;
-  background-image: radial-gradient(circle at 10px 7px, transparent 7px, var(--ink) 7.4px);
-  background-size: 20px 14px;
-  background-repeat: repeat-x;
-  background-position: 0 0;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% -10%, rgba(255, 255, 255, 0.16), transparent 45%),
+    radial-gradient(circle at -10% 110%, rgba(255, 255, 255, 0.08), transparent 40%);
+  pointer-events: none;
 }
-.receipt::before { top: -1px; }
-.receipt::after { bottom: -1px; transform: rotate(180deg); }
+
+.balance-card-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.account-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.account-chip {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(243, 239, 228, 0.75);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 4px 9px;
+  border-radius: 999px;
+}
 
 .eyebrow {
+  position: relative;
   margin: 0;
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #6B6252;
+  color: rgba(243, 239, 228, 0.6);
   font-weight: 600;
 }
 
 .balance {
-  margin: 8px 0 18px;
+  position: relative;
+  margin: 6px 0 20px;
   font-family: var(--mono);
-  font-size: 40px;
+  font-size: 38px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--ink);
   word-break: break-word;
 }
-.balance.negative { color: var(--expense); }
-.balance.positive { color: #1F6B3F; }
+.balance-card.negative .balance { color: #FF8A7A; }
 
-.dashed {
-  border-top: 1px dashed var(--paper-line);
-  margin: 0 0 14px;
+.balance-card-stats {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.receipt-row {
+.stat {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.stat-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+.stat-icon-in { background: rgba(79, 179, 122, 0.22); color: var(--income); }
+.stat-icon-out { background: rgba(225, 91, 79, 0.22); color: var(--expense); }
+
+.stat > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(243, 239, 228, 0.6);
+}
+
+.stat-value {
   font-family: var(--mono);
   font-size: 14px;
-  color: #4B4636;
-  padding: 3px 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* --- Ledger sections (income / expenses) --- */
+/* --- Ledger sections (income / expenses), styled like a bank statement --- */
 .ledger {
   margin-bottom: 22px;
 }
@@ -179,20 +239,49 @@ main {
 }
 
 .ledger-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 11px 2px;
-  border-bottom: 1px dashed var(--ink-line);
-  font-size: 15px;
+  border-bottom: 1px solid var(--ink-line);
 }
+
+.ledger-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  border-radius: 10px;
+  transition: background-color 0.15s;
+}
+.ledger-item-btn:hover,
+.ledger-item-btn:focus-visible {
+  background: var(--ink-soft);
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+.ledger[data-type="income"] .avatar { background: rgba(79, 179, 122, 0.16); color: var(--income); }
+.ledger[data-type="expense"] .avatar { background: rgba(225, 91, 79, 0.16); color: var(--expense); }
 
 .ledger-item .desc {
   flex: 1;
+  min-width: 0;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 15px;
 }
 
 .ledger-item .val {
@@ -204,15 +293,11 @@ main {
 .ledger[data-type="income"] .ledger-item .val { color: var(--income); }
 .ledger[data-type="expense"] .ledger-item .val { color: var(--expense); }
 
-.ledger-item .del {
-  background: none;
-  border: none;
+.ledger-item .chevron {
+  flex-shrink: 0;
   color: var(--text-muted);
-  font-size: 16px;
-  padding: 0 0 0 4px;
-  line-height: 1;
+  font-size: 18px;
 }
-.ledger-item .del:hover { color: var(--expense); }
 
 .empty-hint {
   font-size: 13px;
@@ -229,7 +314,7 @@ main {
   margin-top: 30px;
 }
 
-/* --- Add entry bottom sheet --- */
+/* --- Add / edit entry bottom sheet --- */
 .sheet-overlay {
   position: fixed;
   inset: 0;
@@ -312,5 +397,13 @@ main {
 }
 .btn-primary {
   background: var(--accent);
-  color: var(--ink);
+  color: #fff;
+}
+.btn-danger {
+  background: none;
+  border-color: rgba(225, 91, 79, 0.4);
+  color: var(--expense);
+  flex: 0 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
 }
