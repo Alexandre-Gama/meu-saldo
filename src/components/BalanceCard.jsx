@@ -6,11 +6,6 @@ export default function BalanceCard({ incomeTotal, expenseTotal }) {
 
   return (
     <section className={`balance-card ${status}`}>
-      <div className="balance-card-top">
-        <span className="account-label">Meu Saldo</span>
-        <span className="account-chip">conta corrente</span>
-      </div>
-
       <p className="eyebrow">saldo disponível</p>
       <p className="balance">{currency.format(balance)}</p>
 
