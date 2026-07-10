@@ -1,18 +1,6 @@
-const CACHE_NAME = "meu-saldo-v1";
-const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-];
+const CACHE_NAME = "meu-saldo-v2";
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
-  );
   self.skipWaiting();
 });
 
@@ -26,7 +14,7 @@ self.addEventListener("activate", (event) => {
 });
 
 // Cache-first: serve from cache, fall back to network, and refresh the cache
-// in the background so the next offline visit has the latest version.
+// in the background so the next offline visit has the latest build.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
