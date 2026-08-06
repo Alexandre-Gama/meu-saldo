@@ -295,6 +295,54 @@ main {
   font-style: italic;
 }
 
+/* --- Month navigation --- */
+.month-nav {
+  margin-bottom: 22px;
+}
+
+.month-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.month-nav-btn {
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.month-nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.month-nav-btn:disabled { opacity: 0.35; cursor: default; }
+
+.month-nav-label {
+  min-width: 150px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.month-nav-stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.month-nav-stat.income { color: var(--income); }
+.month-nav-stat.expense { color: var(--expense); }
+
 /* --- Budget overview (spending by category vs monthly limit) --- */
 .budget-overview {
   margin-bottom: 22px;
@@ -457,6 +505,34 @@ main {
 }
 .field input:focus { border-color: var(--accent); }
 .field:last-of-type input { font-family: var(--mono); }
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.checkbox-field input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.stop-recurring-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--ink-line);
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.stop-recurring-btn:hover { border-color: var(--expense); color: var(--expense); }
 
 .sheet-actions {
   display: flex;

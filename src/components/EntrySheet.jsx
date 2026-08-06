@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { categoriesFor, DEFAULT_CATEGORY_ID } from "../categories.js";
 
-export default function EntrySheet({ open, type, entry, onClose, onSave, onDelete }) {
+export default function EntrySheet({ open, type, entry, isRecurring, onClose, onSave, onDelete, onStopRecurring }) {
   const [desc, setDesc] = useState("");
   const [value, setValue] = useState("");
   const [category, setCategory] = useState(DEFAULT_CATEGORY_ID);
+  const [repeatMonthly, setRepeatMonthly] = useState(false);
   const descRef = useRef(null);
   const isEdit = Boolean(entry);
   const categories = categoriesFor(type);
@@ -14,6 +15,7 @@ export default function EntrySheet({ open, type, entry, onClose, onSave, onDelet
     setDesc(entry?.desc ?? "");
     setValue(entry ? String(entry.value).replace(".", ",") : "");
     setCategory(entry?.category ?? DEFAULT_CATEGORY_ID);
+    setRepeatMonthly(false);
     const t = setTimeout(() => descRef.current?.focus(), 50);
     return () => clearTimeout(t);
   }, [open, entry]);
@@ -24,7 +26,7 @@ export default function EntrySheet({ open, type, entry, onClose, onSave, onDelet
 
   function handleSubmit(e) {
     e.preventDefault();
-    onSave({ desc, value, category });
+    onSave({ desc, value, category, repeatMonthly });
   }
 
   return (
@@ -76,6 +78,23 @@ export default function EntrySheet({ open, type, entry, onClose, onSave, onDelet
             ))}
           </div>
         </div>
+
+        {!isEdit && (
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={repeatMonthly}
+              onChange={(e) => setRepeatMonthly(e.target.checked)}
+            />
+            <span>🔁 Repetir todo mês</span>
+          </label>
+        )}
+
+        {isRecurring && (
+          <button type="button" className="stop-recurring-btn" onClick={onStopRecurring}>
+            🔁 Esta {typeLabel} se repete todo mês · Parar de repetir
+          </button>
+        )}
 
         <div className="sheet-actions">
           {isEdit && (

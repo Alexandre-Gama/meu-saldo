@@ -1,7 +1,7 @@
 import { currency } from "../storage.js";
 import { categoryOf } from "../categories.js";
 
-export default function Ledger({ type, title, items, onAdd, onEdit }) {
+export default function Ledger({ type, title, items, activeRecurringIds, onAdd, onEdit }) {
   return (
     <section className="ledger" data-type={type}>
       <div className="ledger-header">
@@ -10,7 +10,7 @@ export default function Ledger({ type, title, items, onAdd, onEdit }) {
       </div>
 
       {items.length === 0 ? (
-        <p className="empty-hint">nenhum lançamento ainda</p>
+        <p className="empty-hint">nenhum lançamento neste mês</p>
       ) : (
         <ul className="ledger-list">
           {items.map((item) => {
@@ -21,7 +21,10 @@ export default function Ledger({ type, title, items, onAdd, onEdit }) {
                   <span className="avatar" aria-hidden="true">{cat.icon}</span>
                   <span className="ledger-item-main">
                     <span className="desc">{item.desc}</span>
-                    <span className="category-tag">{cat.label}</span>
+                    <span className="category-tag">
+                      {cat.label}
+                      {activeRecurringIds?.has(item.recurringId) && <span title="Recorrente"> · 🔁</span>}
+                    </span>
                   </span>
                   <span className="val">{currency.format(item.value)}</span>
                   <span className="chevron" aria-hidden="true">›</span>
