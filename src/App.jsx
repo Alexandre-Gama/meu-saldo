@@ -2,11 +2,15 @@ import { useState } from "react";
 import BalanceCard from "./components/BalanceCard.jsx";
 import Ledger from "./components/Ledger.jsx";
 import EntrySheet from "./components/EntrySheet.jsx";
-import { loadState, saveState, parseAmount, makeId, sumOf } from "./storage.js";
+import BudgetOverview from "./components/BudgetOverview.jsx";
+import BudgetSheet from "./components/BudgetSheet.jsx";
+import { loadState, saveState, parseAmount, makeId, sumOf, currentMonthKey, spentByCategory } from "./storage.js";
+import { DEFAULT_CATEGORY_ID } from "./categories.js";
 
 export default function App() {
   const [state, setState] = useState(loadState);
   const [sheet, setSheet] = useState({ open: false, type: "income", entry: null });
+  const [budgetSheet, setBudgetSheet] = useState({ open: false, categoryId: null });
 
   function persist(next) {
     setState(next);
@@ -25,17 +29,20 @@ export default function App() {
     setSheet((s) => ({ ...s, open: false }));
   }
 
-  function handleSave({ desc, value }) {
+  function handleSave({ desc, value, category }) {
     const trimmedDesc = desc.trim();
     const amount = parseAmount(value);
     if (!trimmedDesc || !Number.isFinite(amount) || amount <= 0) return;
 
     const key = sheet.type === "income" ? "incomes" : "expenses";
     const list = state[key];
+    const cat = category || DEFAULT_CATEGORY_ID;
 
     const nextList = sheet.entry
-      ? list.map((item) => (item.id === sheet.entry.id ? { ...item, desc: trimmedDesc, value: amount } : item))
-      : [...list, { id: makeId(), desc: trimmedDesc, value: amount }];
+      ? list.map((item) =>
+          item.id === sheet.entry.id ? { ...item, desc: trimmedDesc, value: amount, category: cat } : item
+        )
+      : [...list, { id: makeId(), desc: trimmedDesc, value: amount, category: cat, date: Date.now() }];
 
     persist({ ...state, [key]: nextList });
     closeSheet();
@@ -43,6 +50,7 @@ export default function App() {
 
   function handleDelete(id) {
     persist({
+      ...state,
       incomes: state.incomes.filter((i) => i.id !== id),
       expenses: state.expenses.filter((i) => i.id !== id),
     });
@@ -52,12 +60,39 @@ export default function App() {
   function handleReset() {
     if (!state.incomes.length && !state.expenses.length) return;
     if (confirm("Apagar todos os lançamentos de renda e despesas deste aparelho?")) {
-      persist({ incomes: [], expenses: [] });
+      persist({ incomes: [], expenses: [], budgets: {} });
     }
+  }
+
+  function openAddBudget() {
+    setBudgetSheet({ open: true, categoryId: null });
+  }
+
+  function openEditBudget(categoryId) {
+    setBudgetSheet({ open: true, categoryId });
+  }
+
+  function closeBudgetSheet() {
+    setBudgetSheet((s) => ({ ...s, open: false }));
+  }
+
+  function handleSaveBudget(categoryId, limitRaw) {
+    const limit = parseAmount(limitRaw);
+    if (!Number.isFinite(limit) || limit <= 0) return;
+    persist({ ...state, budgets: { ...state.budgets, [categoryId]: limit } });
+    closeBudgetSheet();
+  }
+
+  function handleRemoveBudget(categoryId) {
+    const nextBudgets = { ...state.budgets };
+    delete nextBudgets[categoryId];
+    persist({ ...state, budgets: nextBudgets });
+    closeBudgetSheet();
   }
 
   const incomeTotal = sumOf(state.incomes);
   const expenseTotal = sumOf(state.expenses);
+  const monthExpensesByCategory = spentByCategory(state.expenses, currentMonthKey());
 
   return (
     <>
@@ -68,6 +103,13 @@ export default function App() {
 
       <main>
         <BalanceCard incomeTotal={incomeTotal} expenseTotal={expenseTotal} />
+
+        <BudgetOverview
+          spentByCategory={monthExpensesByCategory}
+          budgets={state.budgets}
+          onEditCategory={openEditBudget}
+          onAddBudget={openAddBudget}
+        />
 
         <Ledger
           type="income"
@@ -93,6 +135,15 @@ export default function App() {
         onClose={closeSheet}
         onSave={handleSave}
         onDelete={handleDelete}
+      />
+
+      <BudgetSheet
+        open={budgetSheet.open}
+        categoryId={budgetSheet.categoryId}
+        currentLimit={budgetSheet.categoryId ? state.budgets[budgetSheet.categoryId] : null}
+        onClose={closeBudgetSheet}
+        onSave={handleSaveBudget}
+        onRemove={handleRemoveBudget}
       />
     </>
   );

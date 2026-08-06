@@ -248,14 +248,28 @@ main {
 .ledger[data-type="income"] .avatar { background: rgba(79, 179, 122, 0.16); color: var(--income); }
 .ledger[data-type="expense"] .avatar { background: rgba(225, 91, 79, 0.16); color: var(--expense); }
 
-.ledger-item .desc {
+.ledger-item-main {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ledger-item .desc {
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 15px;
+}
+
+.category-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ledger-item .val {
@@ -279,6 +293,107 @@ main {
   padding: 12px 2px 0;
   margin: 0;
   font-style: italic;
+}
+
+/* --- Budget overview (spending by category vs monthly limit) --- */
+.budget-overview {
+  margin-bottom: 22px;
+}
+
+.budget-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.budget-row {
+  border-bottom: 1px solid var(--ink-line);
+}
+
+.budget-row-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 4px;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  border-radius: 10px;
+  transition: background-color 0.15s;
+}
+.budget-row-btn:hover,
+.budget-row-btn:focus-visible {
+  background: var(--ink-soft);
+}
+
+.budget-row-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.budget-row-label {
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.budget-row-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.budget-row-value.over { color: var(--expense); }
+
+.budget-row-limit {
+  color: var(--text-muted);
+}
+
+.budget-bar-track {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ink-line);
+  overflow: hidden;
+}
+
+.budget-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.2s ease-out;
+}
+.budget-bar-fill.over { background: var(--expense); }
+
+/* --- Category picker (chips) used in entry/budget sheets --- */
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-chip {
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+.category-chip:hover { border-color: var(--accent); color: var(--text); }
+.category-chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 /* --- Add / edit entry bottom sheet --- */

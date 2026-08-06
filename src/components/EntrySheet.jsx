@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from "react";
+import { categoriesFor, DEFAULT_CATEGORY_ID } from "../categories.js";
 
 export default function EntrySheet({ open, type, entry, onClose, onSave, onDelete }) {
   const [desc, setDesc] = useState("");
   const [value, setValue] = useState("");
+  const [category, setCategory] = useState(DEFAULT_CATEGORY_ID);
   const descRef = useRef(null);
   const isEdit = Boolean(entry);
+  const categories = categoriesFor(type);
 
   useEffect(() => {
     if (!open) return;
     setDesc(entry?.desc ?? "");
     setValue(entry ? String(entry.value).replace(".", ",") : "");
+    setCategory(entry?.category ?? DEFAULT_CATEGORY_ID);
     const t = setTimeout(() => descRef.current?.focus(), 50);
     return () => clearTimeout(t);
   }, [open, entry]);
@@ -20,7 +24,7 @@ export default function EntrySheet({ open, type, entry, onClose, onSave, onDelet
 
   function handleSubmit(e) {
     e.preventDefault();
-    onSave({ desc, value });
+    onSave({ desc, value, category });
   }
 
   return (
@@ -54,6 +58,24 @@ export default function EntrySheet({ open, type, entry, onClose, onSave, onDelet
             autoComplete="off"
           />
         </label>
+
+        <div className="field">
+          <span>Categoria</span>
+          <div className="category-picker" role="radiogroup" aria-label="Categoria">
+            {categories.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                role="radio"
+                aria-checked={category === c.id}
+                className={`category-chip ${category === c.id ? "selected" : ""}`}
+                onClick={() => setCategory(c.id)}
+              >
+                <span aria-hidden="true">{c.icon}</span> {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="sheet-actions">
           {isEdit && (
