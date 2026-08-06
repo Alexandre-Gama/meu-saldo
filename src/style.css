@@ -248,14 +248,28 @@ main {
 .ledger[data-type="income"] .avatar { background: rgba(79, 179, 122, 0.16); color: var(--income); }
 .ledger[data-type="expense"] .avatar { background: rgba(225, 91, 79, 0.16); color: var(--expense); }
 
-.ledger-item .desc {
+.ledger-item-main {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ledger-item .desc {
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 15px;
+}
+
+.category-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ledger-item .val {
@@ -279,6 +293,155 @@ main {
   padding: 12px 2px 0;
   margin: 0;
   font-style: italic;
+}
+
+/* --- Month navigation --- */
+.month-nav {
+  margin-bottom: 22px;
+}
+
+.month-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.month-nav-btn {
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.month-nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.month-nav-btn:disabled { opacity: 0.35; cursor: default; }
+
+.month-nav-label {
+  min-width: 150px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.month-nav-stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.month-nav-stat.income { color: var(--income); }
+.month-nav-stat.expense { color: var(--expense); }
+
+/* --- Budget overview (spending by category vs monthly limit) --- */
+.budget-overview {
+  margin-bottom: 22px;
+}
+
+.budget-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.budget-row {
+  border-bottom: 1px solid var(--ink-line);
+}
+
+.budget-row-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 4px;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  border-radius: 10px;
+  transition: background-color 0.15s;
+}
+.budget-row-btn:hover,
+.budget-row-btn:focus-visible {
+  background: var(--ink-soft);
+}
+
+.budget-row-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.budget-row-label {
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.budget-row-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.budget-row-value.over { color: var(--expense); }
+
+.budget-row-limit {
+  color: var(--text-muted);
+}
+
+.budget-bar-track {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ink-line);
+  overflow: hidden;
+}
+
+.budget-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.2s ease-out;
+}
+.budget-bar-fill.over { background: var(--expense); }
+
+/* --- Category picker (chips) used in entry/budget sheets --- */
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-chip {
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+.category-chip:hover { border-color: var(--accent); color: var(--text); }
+.category-chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 /* --- Add / edit entry bottom sheet --- */
@@ -342,6 +505,34 @@ main {
 }
 .field input:focus { border-color: var(--accent); }
 .field:last-of-type input { font-family: var(--mono); }
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.checkbox-field input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.stop-recurring-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--ink-line);
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.stop-recurring-btn:hover { border-color: var(--expense); color: var(--expense); }
 
 .sheet-actions {
   display: flex;
