@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BalanceCard from "./components/BalanceCard.jsx";
 import Ledger from "./components/Ledger.jsx";
 import EntrySheet from "./components/EntrySheet.jsx";
 import BudgetOverview from "./components/BudgetOverview.jsx";
 import BudgetSheet from "./components/BudgetSheet.jsx";
 import MonthNav from "./components/MonthNav.jsx";
+import LockScreen from "./components/LockScreen.jsx";
+import {
+  isBiometricAvailable,
+  isBiometricEnabled,
+  enableBiometric,
+  disableBiometric,
+  verifyBiometric,
+} from "./auth.js";
 import {
   loadState,
   saveState,
@@ -32,6 +40,43 @@ export default function App() {
   const [monthKey, setMonthKey] = useState(currentMonthKey);
   const [sheet, setSheet] = useState({ open: false, type: "income", entry: null });
   const [budgetSheet, setBudgetSheet] = useState({ open: false, categoryId: null });
+
+  const [biometricSupported, setBiometricSupported] = useState(false);
+  const [biometricEnabled, setBiometricEnabledState] = useState(isBiometricEnabled);
+  const [locked, setLocked] = useState(isBiometricEnabled);
+
+  useEffect(() => {
+    isBiometricAvailable().then(setBiometricSupported);
+  }, []);
+
+  async function handleUnlock() {
+    await verifyBiometric();
+    setLocked(false);
+  }
+
+  function handleDisableFromLock() {
+    if (confirm("Desativar a biometria e abrir o app sem verificação?")) {
+      disableBiometric();
+      setBiometricEnabledState(false);
+      setLocked(false);
+    }
+  }
+
+  async function handleToggleBiometric() {
+    if (biometricEnabled) {
+      if (confirm("Desativar a autenticação por biometria?")) {
+        disableBiometric();
+        setBiometricEnabledState(false);
+      }
+      return;
+    }
+    try {
+      await enableBiometric();
+      setBiometricEnabledState(true);
+    } catch {
+      alert("Não foi possível ativar a biometria neste aparelho.");
+    }
+  }
 
   function persist(next) {
     setState(next);
@@ -146,11 +191,27 @@ export default function App() {
   const canGoNext = monthKey < currentMonthKey();
   const activeRecurringIds = new Set((state.recurring || []).map((t) => t.id));
 
+  if (locked) {
+    return <LockScreen onUnlock={handleUnlock} onDisable={handleDisableFromLock} />;
+  }
+
   return (
     <>
       <header className="topbar">
         <span className="brand">Meu Saldo</span>
-        <button className="icon-btn" title="Limpar tudo" aria-label="Limpar tudo" onClick={handleReset}>⟲</button>
+        <div className="topbar-actions">
+          {biometricSupported && (
+            <button
+              className="icon-btn"
+              title={biometricEnabled ? "Desativar biometria" : "Ativar biometria"}
+              aria-label={biometricEnabled ? "Desativar biometria" : "Ativar biometria"}
+              onClick={handleToggleBiometric}
+            >
+              {biometricEnabled ? "🔒" : "🔓"}
+            </button>
+          )}
+          <button className="icon-btn" title="Limpar tudo" aria-label="Limpar tudo" onClick={handleReset}>⟲</button>
+        </div>
       </header>
 
       <main>
