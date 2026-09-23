@@ -5,7 +5,6 @@ import EntrySheet from "./components/EntrySheet.jsx";
 import BudgetOverview from "./components/BudgetOverview.jsx";
 import BudgetSheet from "./components/BudgetSheet.jsx";
 import MonthNav from "./components/MonthNav.jsx";
-import LockScreen from "./components/LockScreen.jsx";
 import {
   isBiometricAvailable,
   isBiometricEnabled,
@@ -43,31 +42,44 @@ export default function App() {
 
   const [biometricSupported, setBiometricSupported] = useState(false);
   const [biometricEnabled, setBiometricEnabledState] = useState(isBiometricEnabled);
-  const [locked, setLocked] = useState(isBiometricEnabled);
+  // "pending" blocks all rendering below until the OS biometric check resolves.
+  const [authStatus, setAuthStatus] = useState(() => (isBiometricEnabled() ? "pending" : "ok"));
 
   useEffect(() => {
     isBiometricAvailable().then(setBiometricSupported);
   }, []);
 
-  async function handleUnlock() {
-    await verifyBiometric();
-    setLocked(false);
-  }
-
-  function handleDisableFromLock() {
-    if (confirm("Desativar a biometria e abrir o app sem verificação?")) {
-      disableBiometric();
-      setBiometricEnabledState(false);
-      setLocked(false);
-    }
-  }
+  useEffect(() => {
+    if (authStatus !== "pending") return;
+    let cancelled = false;
+    verifyBiometric()
+      .then(() => {
+        if (!cancelled) setAuthStatus("ok");
+      })
+      .catch(() => {
+        // No valid biometric check (denied, dismissed via back button, etc.) — close the app.
+        // window.close() only works for script-opened tabs / installed PWA contexts; when the
+        // browser blocks it we still never fall through to rendering app content.
+        if (cancelled) return;
+        setAuthStatus("denied");
+        window.close();
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus]);
 
   async function handleToggleBiometric() {
     if (biometricEnabled) {
-      if (confirm("Desativar a autenticação por biometria?")) {
-        disableBiometric();
-        setBiometricEnabledState(false);
+      if (!confirm("Desativar a autenticação por biometria?")) return;
+      try {
+        await verifyBiometric();
+      } catch {
+        alert("Não foi possível confirmar sua identidade. A biometria continua ativada.");
+        return;
       }
+      disableBiometric();
+      setBiometricEnabledState(false);
       return;
     }
     try {
@@ -191,8 +203,8 @@ export default function App() {
   const canGoNext = monthKey < currentMonthKey();
   const activeRecurringIds = new Set((state.recurring || []).map((t) => t.id));
 
-  if (locked) {
-    return <LockScreen onUnlock={handleUnlock} onDisable={handleDisableFromLock} />;
+  if (authStatus !== "ok") {
+    return null;
   }
 
   return (
