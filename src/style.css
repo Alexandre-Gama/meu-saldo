@@ -570,3 +570,90 @@ main {
   padding-left: 16px;
   padding-right: 16px;
 }
+
+/* --- Backup banner and sheet --- */
+.backup-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.backup-banner.error { border-left-color: var(--expense); }
+
+.backup-banner-text {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.backup-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.banner-btn {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.banner-btn-ghost {
+  background: none;
+  border-color: var(--ink-line);
+  color: var(--text-muted);
+}
+
+.backup-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  border-left: 3px solid var(--ink-line);
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.backup-status strong { color: var(--text); font-size: 14px; }
+.backup-status.ok { border-left-color: var(--income); }
+.backup-status.warn { border-left-color: var(--accent); }
+.backup-status.error { border-left-color: var(--expense); }
+
+.backup-message {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--income);
+}
+
+.sheet-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.sheet-stack .btn { flex: none; width: 100%; }
+.sheet-stack .sheet-actions { margin-top: 0; }
+.sheet-stack .sheet-actions .btn { flex: 1; width: auto; }
+.sheet-stack .sheet-actions .btn-danger { flex: 0 0 auto; }
+
+.sheet-note {
+  margin: 0 0 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}

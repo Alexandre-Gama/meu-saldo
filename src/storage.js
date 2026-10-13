@@ -24,21 +24,62 @@ function normalizeRecurring(item) {
   };
 }
 
+export function emptyState() {
+  return { incomes: [], expenses: [], budgets: {}, recurring: [] };
+}
+
+export function normalizeState(parsed) {
+  if (!parsed || typeof parsed !== "object") return emptyState();
+  return {
+    incomes: Array.isArray(parsed.incomes) ? parsed.incomes.map(normalizeEntry) : [],
+    expenses: Array.isArray(parsed.expenses) ? parsed.expenses.map(normalizeEntry) : [],
+    budgets: parsed.budgets && typeof parsed.budgets === "object" ? parsed.budgets : {},
+    recurring: Array.isArray(parsed.recurring) ? parsed.recurring.map(normalizeRecurring) : [],
+  };
+}
+
+export function isStateEmpty(state) {
+  return (
+    state.incomes.length === 0 &&
+    state.expenses.length === 0 &&
+    state.recurring.length === 0 &&
+    Object.keys(state.budgets).length === 0
+  );
+}
+
+// Union of two states by entry id, so restoring a backup never drops what was
+// added since. For budgets the base (current) limit wins on a clash.
+export function mergeStates(base, incoming) {
+  const unionById = (a, b) => {
+    const seen = new Set(a.map((item) => item.id));
+    return [...a, ...b.filter((item) => !seen.has(item.id))];
+  };
+  return {
+    incomes: unionById(base.incomes, incoming.incomes),
+    expenses: unionById(base.expenses, incoming.expenses),
+    recurring: unionById(base.recurring, incoming.recurring),
+    budgets: { ...incoming.budgets, ...base.budgets },
+  };
+}
+
 export function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { incomes: [], expenses: [], budgets: {}, recurring: [] };
-    const parsed = JSON.parse(raw);
-    return {
-      incomes: Array.isArray(parsed.incomes) ? parsed.incomes.map(normalizeEntry) : [],
-      expenses: Array.isArray(parsed.expenses) ? parsed.expenses.map(normalizeEntry) : [],
-      budgets: parsed.budgets && typeof parsed.budgets === "object" ? parsed.budgets : {},
-      recurring: Array.isArray(parsed.recurring) ? parsed.recurring.map(normalizeRecurring) : [],
-    };
+    if (!raw) return emptyState();
+    return normalizeState(JSON.parse(raw));
   } catch (err) {
     console.error("Não foi possível ler os dados salvos:", err);
-    return { incomes: [], expenses: [], budgets: {}, recurring: [] };
+    return emptyState();
   }
+}
+
+const saveListeners = new Set();
+
+// Lets other modules (the file backup) react after every successful save
+// without storage.js having to know about them.
+export function onStateSaved(listener) {
+  saveListeners.add(listener);
+  return () => saveListeners.delete(listener);
 }
 
 export function saveState(state) {
@@ -47,6 +88,14 @@ export function saveState(state) {
   } catch (err) {
     console.error("Não foi possível salvar os dados:", err);
     alert("Não foi possível salvar. O armazenamento do navegador pode estar cheio ou bloqueado.");
+    return;
+  }
+  for (const listener of saveListeners) {
+    try {
+      listener(state);
+    } catch (err) {
+      console.error("Falha ao notificar o backup:", err);
+    }
   }
 }
 
