@@ -5,6 +5,8 @@ import EntrySheet from "./components/EntrySheet.jsx";
 import BudgetOverview from "./components/BudgetOverview.jsx";
 import BudgetSheet from "./components/BudgetSheet.jsx";
 import MonthNav from "./components/MonthNav.jsx";
+import BackupSheet, { formatDateTime } from "./components/BackupSheet.jsx";
+import BackupBanner from "./components/BackupBanner.jsx";
 import {
   isBiometricAvailable,
   isBiometricEnabled,
@@ -13,8 +15,19 @@ import {
   verifyBiometric,
 } from "./auth.js";
 import {
+  useBackup,
+  parseBackup,
+  countEntries,
+  entriesLabel,
+  markSynced,
+  acceptRestoreCandidate,
+  dismissRestoreCandidate,
+} from "./backup.js";
+import {
   loadState,
   saveState,
+  isStateEmpty,
+  mergeStates,
   parseAmount,
   makeId,
   sumOf,
@@ -39,6 +52,8 @@ export default function App() {
   const [monthKey, setMonthKey] = useState(currentMonthKey);
   const [sheet, setSheet] = useState({ open: false, type: "income", entry: null });
   const [budgetSheet, setBudgetSheet] = useState({ open: false, categoryId: null });
+  const [backupSheetOpen, setBackupSheetOpen] = useState(false);
+  const backup = useBackup();
 
   const [biometricSupported, setBiometricSupported] = useState(false);
   const [biometricEnabled, setBiometricEnabledState] = useState(isBiometricEnabled);
@@ -163,9 +178,47 @@ export default function App() {
 
   function handleReset() {
     if (!state.incomes.length && !state.expenses.length) return;
-    if (confirm("Apagar todos os lançamentos de renda e despesas deste aparelho?")) {
+    const backupNote = backup.status === "active" ? "\n\nO arquivo de backup automático também será esvaziado." : "";
+    if (confirm(`Apagar todos os lançamentos de renda e despesas deste aparelho?${backupNote}`)) {
       persist({ incomes: [], expenses: [], budgets: {}, recurring: [] });
     }
+  }
+
+  // Restored data goes through the same monthly-recurring pass as a normal launch.
+  function applyRestored(next) {
+    const { state: withRecurring } = generateRecurringInstances(next, currentMonthKey());
+    persist(withRecurring);
+  }
+
+  // Returns a message to show in the backup sheet, or null when nothing was restored.
+  async function handleRestoreFile(file) {
+    let parsed;
+    try {
+      parsed = parseBackup(await file.text());
+    } catch (err) {
+      alert(err.message || "Não foi possível ler o arquivo.");
+      return null;
+    }
+    const total = countEntries(parsed.state);
+    const when = parsed.exportedAt ? formatDateTime(parsed.exportedAt) : "data desconhecida";
+    const replacing = isStateEmpty(state) ? "" : "\n\nOs dados atuais deste aparelho serão substituídos.";
+    if (!confirm(`Restaurar o backup de ${when} com ${entriesLabel(total)}?${replacing}`)) return null;
+    applyRestored(parsed.state);
+    markSynced();
+    return `Backup restaurado: ${entriesLabel(total)}.`;
+  }
+
+  // The linked backup file has data and the app started empty: bring it in, keeping anything added since.
+  function handleAcceptRestore() {
+    const incoming = acceptRestoreCandidate();
+    if (incoming) applyRestored(mergeStates(state, incoming));
+  }
+
+  function handleDismissRestore() {
+    if (!confirm("Manter os dados atuais? O conteúdo do arquivo de backup será substituído pelo que está no app agora.")) {
+      return;
+    }
+    dismissRestoreCandidate();
   }
 
   function openAddBudget() {
@@ -222,11 +275,27 @@ export default function App() {
               {biometricEnabled ? "🔒" : "🔓"}
             </button>
           )}
+          <button
+            className="icon-btn"
+            title="Backup dos dados"
+            aria-label="Backup dos dados"
+            onClick={() => setBackupSheetOpen(true)}
+          >
+            💾
+          </button>
           <button className="icon-btn" title="Limpar tudo" aria-label="Limpar tudo" onClick={handleReset}>⟲</button>
         </div>
       </header>
 
       <main>
+        <BackupBanner
+          backup={backup}
+          hasData={!isStateEmpty(state)}
+          onOpenSheet={() => setBackupSheetOpen(true)}
+          onAcceptRestore={handleAcceptRestore}
+          onDismissRestore={handleDismissRestore}
+        />
+
         <BalanceCard incomeTotal={incomeTotal} expenseTotal={expenseTotal} />
 
         <MonthNav
@@ -273,6 +342,15 @@ export default function App() {
         onSave={handleSave}
         onDelete={handleDelete}
         onStopRecurring={() => handleStopRecurring(sheet.entry.recurringId)}
+      />
+
+      <BackupSheet
+        open={backupSheetOpen}
+        backup={backup}
+        onClose={() => setBackupSheetOpen(false)}
+        onRestoreFile={handleRestoreFile}
+        onAcceptRestore={handleAcceptRestore}
+        onDismissRestore={handleDismissRestore}
       />
 
       <BudgetSheet
