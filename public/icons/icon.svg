@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="96" y1="40" x2="430" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5A9BF2"/>
+      <stop offset="0.55" stop-color="#3563D8"/>
+      <stop offset="1" stop-color="#27308F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.2" r="0.75">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="coin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#0B1440" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="256" fill="url(#glow)"/>
+  <circle cx="256" cy="256" r="160" fill="url(#coin)" stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="5"/>
+  <g filter="url(#shadow)"><path transform="translate(256 256) scale(0.10777 -0.10777) translate(-668 -745)" d="M580 -220H769V-20C1080 8 1266 178 1266 440C1266 664 1125 795 807 862L769 870V1247C870 1217 934 1141 942 1033H1230C1222 1301 1051 1474 769 1508V1710H580V1510C289 1482 99 1309 99 1061C99 848 242 711 537 647L580 638V238C447 266 370 355 367 489H70C70 193 257 9 580 -20ZM769 237V594C904 555 961 502 961 420C961 326 887 259 769 237ZM580 915C458 952 407 1000 407 1076C407 1163 475 1229 580 1252Z" fill="#FFFFFF"/></g>
+</svg>
