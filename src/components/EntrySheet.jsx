@@ -1,11 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { categoriesFor, DEFAULT_CATEGORY_ID } from "../categories.js";
+import { monthLabel, monthKeyOf, shiftMonthKey, toDateInput } from "../storage.js";
 
-export default function EntrySheet({ open, type, entry, isRecurring, onClose, onSave, onDelete, onStopRecurring }) {
+// A recurring occurrence stays in its own month, so the picker is fenced to it.
+function monthBounds(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
+  const last = new Date(year, month, 0).getDate();
+  return { min: `${monthKey}-01`, max: `${monthKey}-${String(last).padStart(2, "0")}` };
+}
+
+export default function EntrySheet({
+  open,
+  type,
+  entry,
+  defaultDate,
+  maxDate,
+  template,
+  onClose,
+  onSave,
+  onDelete,
+  onStopRecurring,
+}) {
   const [desc, setDesc] = useState("");
   const [value, setValue] = useState("");
   const [category, setCategory] = useState(DEFAULT_CATEGORY_ID);
+  const [date, setDate] = useState("");
   const [repeatMonthly, setRepeatMonthly] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const [stopFrom, setStopFrom] = useState("");
   const descRef = useRef(null);
   const isEdit = Boolean(entry);
   const categories = categoriesFor(type);
@@ -15,7 +37,9 @@ export default function EntrySheet({ open, type, entry, isRecurring, onClose, on
     setDesc(entry?.desc ?? "");
     setValue(entry ? String(entry.value).replace(".", ",") : "");
     setCategory(entry?.category ?? DEFAULT_CATEGORY_ID);
+    setDate(toDateInput(entry ? entry.date : defaultDate));
     setRepeatMonthly(false);
+    setStopping(false);
     const t = setTimeout(() => descRef.current?.focus(), 50);
     return () => clearTimeout(t);
   }, [open, entry]);
@@ -23,10 +47,25 @@ export default function EntrySheet({ open, type, entry, isRecurring, onClose, on
   if (!open) return null;
 
   const typeLabel = type === "income" ? "renda" : "despesa";
+  const entryMonth = entry ? monthKeyOf(entry.date) : null;
+  const dateBounds = template && entryMonth ? monthBounds(entryMonth) : { min: "2000-01-01", max: maxDate };
+  const earliestStop = template ? shiftMonthKey(template.startMonth, 1) : null;
 
   function handleSubmit(e) {
     e.preventDefault();
-    onSave({ desc, value, category, repeatMonthly });
+    onSave({ desc, value, category, date, repeatMonthly });
+  }
+
+  function openStopPicker() {
+    // Default to the month after this occurrence: it keeps this one and drops the rest.
+    const suggested = shiftMonthKey(entryMonth, 1);
+    setStopFrom(template.stopMonth ?? (suggested < earliestStop ? earliestStop : suggested));
+    setStopping(true);
+  }
+
+  function handleStop() {
+    if (!/^\d{4}-\d{2}$/.test(stopFrom) || stopFrom < earliestStop) return;
+    onStopRecurring(stopFrom);
   }
 
   return (
@@ -48,7 +87,7 @@ export default function EntrySheet({ open, type, entry, isRecurring, onClose, on
           />
         </label>
 
-        <label className="field">
+        <label className="field field-mono">
           <span>Valor</span>
           <input
             type="text"
@@ -58,6 +97,18 @@ export default function EntrySheet({ open, type, entry, isRecurring, onClose, on
             required
             inputMode="decimal"
             autoComplete="off"
+          />
+        </label>
+
+        <label className="field">
+          <span>Data</span>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            min={dateBounds.min}
+            max={dateBounds.max}
+            required
           />
         </label>
 
@@ -90,15 +141,49 @@ export default function EntrySheet({ open, type, entry, isRecurring, onClose, on
           </label>
         )}
 
-        {isRecurring && (
-          <button type="button" className="stop-recurring-btn" onClick={onStopRecurring}>
-            🔁 Esta {typeLabel} se repete todo mês · Parar de repetir
+        {template && !stopping && (
+          <button type="button" className="stop-recurring-btn" onClick={openStopPicker}>
+            {template.stopMonth
+              ? `🔁 Se repete até ${monthLabel(shiftMonthKey(template.stopMonth, -1))} · Alterar`
+              : `🔁 Esta ${typeLabel} se repete todo mês · Parar de repetir`}
           </button>
+        )}
+
+        {template && stopping && (
+          <div className="stop-recurring-panel">
+            <label className="field">
+              <span>Parar de repetir a partir de</span>
+              <input
+                type="month"
+                value={stopFrom}
+                onChange={(e) => setStopFrom(e.target.value)}
+                min={earliestStop}
+                placeholder="AAAA-MM"
+              />
+            </label>
+            <p className="sheet-note">
+              Os lançamentos anteriores a esse mês continuam. A partir dele, esta {typeLabel} deixa de se repetir
+              e os lançamentos já criados são removidos.
+            </p>
+            <div className="sheet-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setStopping(false)}>
+                Voltar
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleStop}
+                disabled={!/^\d{4}-\d{2}$/.test(stopFrom) || stopFrom < earliestStop}
+              >
+                Parar de repetir
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="sheet-actions">
           {isEdit && (
-            <button type="button" className="btn btn-danger" onClick={() => onDelete(entry.id)}>
+            <button type="button" className="btn btn-danger" onClick={() => onDelete(entry)}>
               Excluir
             </button>
           )}

@@ -1,4 +1,4 @@
-import { currency } from "../storage.js";
+import { currency, dateLabel, isScheduled } from "../storage.js";
 import { categoryOf } from "../categories.js";
 
 export default function Ledger({ type, title, items, activeRecurringIds, onAdd, onEdit }) {
@@ -15,14 +15,16 @@ export default function Ledger({ type, title, items, activeRecurringIds, onAdd, 
         <ul className="ledger-list">
           {items.map((item) => {
             const cat = categoryOf(type, item.category);
+            const scheduled = isScheduled(item);
             return (
-              <li key={item.id} className="ledger-item">
+              <li key={item.id} className={`ledger-item ${scheduled ? "scheduled" : ""}`}>
                 <button className="ledger-item-btn" onClick={() => onEdit(item)}>
                   <span className="avatar" aria-hidden="true">{cat.icon}</span>
                   <span className="ledger-item-main">
                     <span className="desc">{item.desc}</span>
                     <span className="category-tag">
-                      {cat.label}
+                      {cat.label} · {dateLabel(item.date)}
+                      {scheduled && " · previsto"}
                       {activeRecurringIds?.has(item.recurringId) && <span title="Recorrente"> · 🔁</span>}
                     </span>
                   </span>
