@@ -21,6 +21,10 @@ function normalizeRecurring(item) {
     category: typeof item.category === "string" ? item.category : DEFAULT_CATEGORY_ID,
     day: Number.isFinite(item.day) ? item.day : 1,
     startMonth: typeof item.startMonth === "string" ? item.startMonth : currentMonthKey(),
+    // Months from here on no longer repeat (exclusive); null means it repeats indefinitely.
+    stopMonth: typeof item.stopMonth === "string" ? item.stopMonth : null,
+    // Months whose occurrence was deleted on purpose, so it isn't regenerated.
+    skipped: Array.isArray(item.skipped) ? item.skipped.filter((m) => typeof m === "string") : [],
   };
 }
 
@@ -155,4 +159,46 @@ export function dayTimestamp(monthKey, day) {
   const [year, month] = monthKey.split("-").map(Number);
   const lastDay = new Date(year, month, 0).getDate();
   return new Date(year, month - 1, Math.min(day, lastDay), 12, 0, 0).getTime();
+}
+
+// How far ahead entries can be planned. Keeps the forecast math and the date picker bounded.
+export const MAX_FORECAST_MONTHS = 120;
+
+export function maxForecastMonthKey() {
+  return shiftMonthKey(currentMonthKey(), MAX_FORECAST_MONTHS);
+}
+
+export function dayKeyOf(timestamp) {
+  const d = new Date(timestamp);
+  return `${monthKeyOf(timestamp)}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Entries dated after today are a forecast: they show up in their month but
+// don't count toward the balance until their day arrives.
+export function isScheduled(item) {
+  return dayKeyOf(item.date) > dayKeyOf(Date.now());
+}
+
+export function realizedOnly(list) {
+  return list.filter((item) => !isScheduled(item));
+}
+
+// <input type="date"> speaks "YYYY-MM-DD" in local time.
+export function toDateInput(timestamp) {
+  return dayKeyOf(timestamp);
+}
+
+export function fromDateInput(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value));
+  if (!match) return NaN;
+  const [, y, m, d] = match.map(Number);
+  const date = new Date(y, m - 1, d, 12, 0, 0);
+  // Reject impossible dates like 2026-02-31, which Date would silently roll over.
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return NaN;
+  return date.getTime();
+}
+
+export function dateLabel(timestamp) {
+  const d = new Date(timestamp);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 }

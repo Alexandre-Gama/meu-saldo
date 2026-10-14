@@ -286,6 +286,12 @@ main {
 .ledger[data-type="income"] .ledger-item .val { color: var(--income); }
 .ledger[data-type="expense"] .ledger-item .val { color: var(--expense); }
 
+/* Dated after today: planned, not yet counted in the balance. */
+.ledger-item.scheduled .avatar,
+.ledger-item.scheduled .desc,
+.ledger-item.scheduled .val { opacity: 0.6; }
+.ledger-item.scheduled .desc { font-style: italic; }
+
 .ledger-item .chevron {
   flex-shrink: 0;
   color: var(--text-muted);
@@ -347,6 +353,28 @@ main {
 }
 .month-nav-stat.income { color: var(--income); }
 .month-nav-stat.expense { color: var(--expense); }
+
+.month-nav-badge {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.month-nav-projection {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.month-nav-projection strong {
+  font-family: var(--mono);
+  color: var(--text);
+}
+.month-nav-projection strong.negative { color: var(--expense); }
 
 /* --- Budget overview (spending by category vs monthly limit) --- */
 .budget-overview {
@@ -470,6 +498,10 @@ main {
   border-radius: 16px 16px 0 0;
   padding: 22px 22px max(22px, env(safe-area-inset-bottom));
   animation: slide-up 0.18s ease-out;
+  /* The entry form got taller (date, stop-recurrence): scroll instead of overflowing small screens. */
+  max-height: 92vh;
+  max-height: 92dvh;
+  overflow-y: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -509,7 +541,13 @@ main {
   border-radius: 8px;
 }
 .field input:focus { border-color: var(--accent); }
-.field:last-of-type input { font-family: var(--mono); }
+.field-mono input { font-family: var(--mono); }
+/* Keeps the native date/month picker legible on the dark background. */
+.field input[type="date"],
+.field input[type="month"] {
+  color-scheme: dark;
+  min-height: 46px;
+}
 
 .checkbox-field {
   display: flex;
@@ -539,6 +577,15 @@ main {
 }
 .stop-recurring-btn:hover { border-color: var(--expense); color: var(--expense); }
 
+.stop-recurring-panel {
+  border: 1px dashed var(--ink-line);
+  border-radius: 8px;
+  padding: 12px 12px 4px;
+  margin-bottom: 16px;
+}
+.stop-recurring-panel .sheet-note { margin-bottom: 12px; }
+.stop-recurring-panel .sheet-actions { margin: 0 0 8px; }
+
 .sheet-actions {
   display: flex;
   gap: 10px;
@@ -562,6 +609,7 @@ main {
   background: var(--accent);
   color: #fff;
 }
+.btn:disabled { opacity: 0.4; cursor: default; }
 .btn-danger {
   background: none;
   border-color: rgba(225, 91, 79, 0.4);

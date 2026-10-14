@@ -59,7 +59,7 @@ export default function BudgetSheet({ open, categoryId, currentLimit, onClose, o
           </div>
         ) : (
           <>
-            <label className="field">
+            <label className="field field-mono">
               <span>Limite mensal</span>
               <input
                 ref={inputRef}
