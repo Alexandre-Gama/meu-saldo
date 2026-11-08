@@ -67,7 +67,7 @@ export default function AuthScreen({ beforeSignIn }) {
     <div className="auth-screen">
       <div className="auth-card">
         <p className="auth-brand">Meu Saldo</p>
-        <p className="auth-tagline">Seus lançamentos ficam guardados na sua conta e aparecem em qualquer aparelho.</p>
+        <p className="auth-tagline">Sistema de planejamento e controle financeiro simples e fácil de usar.</p>
 
         <div className="auth-tabs" role="tablist" aria-label="Entrar ou criar conta">
           <button
