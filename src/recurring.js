@@ -30,7 +30,9 @@ export function generateRecurringInstances(state, monthKey) {
     if (hasInstance(list, template, monthKey)) continue;
 
     list.push({
-      id: makeId(),
+      // Same id on every device, so two devices opening the app in the same new
+      // month write the same document instead of creating duplicates.
+      id: `${template.id}_${monthKey}`,
       desc: template.desc,
       value: template.value,
       category: template.category,

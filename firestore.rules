@@ -1,0 +1,76 @@
+rules_version = '2';
+
+// Regras de segurança do Firestore do Meu Saldo.
+// Cole este conteúdo em: Console do Firebase > Firestore Database > Regras > Publicar.
+//
+// Tudo o que o app guarda fica em users/{uid}/..., e cada pessoa só enxerga e altera
+// o que está embaixo do próprio uid. Qualquer outro caminho é negado.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isText(value, max) {
+      return value is string && value.size() <= max;
+    }
+
+    function isAmount(value) {
+      return value is number && value >= 0 && value < 1000000000000;
+    }
+
+    // Lançamento de renda ou despesa.
+    function validEntry(d) {
+      return d.keys().hasOnly(['desc', 'value', 'category', 'date', 'createdAt', 'recurringId'])
+        && d.keys().hasAll(['desc', 'value', 'category', 'date', 'createdAt'])
+        && isText(d.desc, 200)
+        && isAmount(d.value)
+        && isText(d.category, 60)
+        && d.date is number
+        && d.createdAt is number
+        && (!('recurringId' in d) || isText(d.recurringId, 200));
+    }
+
+    // Modelo de lançamento mensal (repete todo mês).
+    function validRecurring(d) {
+      return d.keys().hasOnly(['type', 'desc', 'value', 'category', 'day', 'startMonth', 'stopMonth', 'skipped'])
+        && d.keys().hasAll(['type', 'desc', 'value', 'category', 'day', 'startMonth', 'stopMonth', 'skipped'])
+        && d.type in ['income', 'expense']
+        && isText(d.desc, 200)
+        && isAmount(d.value)
+        && isText(d.category, 60)
+        && d.day is int && d.day >= 1 && d.day <= 31
+        && isText(d.startMonth, 7)
+        && (d.stopMonth == null || isText(d.stopMonth, 7))
+        && d.skipped is list && d.skipped.size() <= 1500;
+    }
+
+    // Limite mensal de uma categoria (o id do documento é o id da categoria).
+    function validBudget(d) {
+      return d.keys().hasOnly(['limit'])
+        && d.limit is number && d.limit > 0 && d.limit < 1000000000000;
+    }
+
+    match /users/{userId}/incomes/{entryId} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validEntry(request.resource.data);
+    }
+
+    match /users/{userId}/expenses/{entryId} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validEntry(request.resource.data);
+    }
+
+    match /users/{userId}/recurring/{templateId} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validRecurring(request.resource.data);
+    }
+
+    match /users/{userId}/budgets/{categoryId} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validBudget(request.resource.data);
+    }
+  }
+}

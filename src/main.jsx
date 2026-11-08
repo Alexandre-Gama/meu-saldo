@@ -1,11 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
-import { initBackup } from "./backup.js";
+import { cleanUpOldBackupFeature } from "./legacy.js";
 import "./style.css";
 
-// Runs before the first render so it sees the data as it was on launch.
-initBackup().catch((err) => console.warn("Backup em arquivo indisponível:", err));
+// The file-backup feature is gone (data lives in the account now); drop what it left in the browser.
+cleanUpOldBackupFeature();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

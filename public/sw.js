@@ -1,4 +1,4 @@
-const CACHE_NAME = "meu-saldo-v3";
+const CACHE_NAME = "meu-saldo-v4";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -17,6 +17,9 @@ self.addEventListener("activate", (event) => {
 // in the background so the next offline visit has the latest build.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // Only the app's own files are cached. Firebase (login and the database, on googleapis.com)
+  // must go straight to the network: it streams responses and has its own offline cache.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => {

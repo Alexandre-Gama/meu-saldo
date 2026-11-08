@@ -1,7 +1,7 @@
 {
   "name": "Meu Saldo",
   "short_name": "Meu Saldo",
-  "description": "Veja quanto sobra depois da renda e das despesas — tudo salvo no seu telefone.",
+  "description": "Veja quanto sobra depois da renda e das despesas — tudo salvo na sua conta.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

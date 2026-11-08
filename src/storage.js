@@ -1,7 +1,5 @@
 import { DEFAULT_CATEGORY_ID } from "./categories.js";
 
-const STORAGE_KEY = "meu-saldo:v1";
-
 export const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 function normalizeEntry(entry) {
@@ -64,43 +62,6 @@ export function mergeStates(base, incoming) {
     recurring: unionById(base.recurring, incoming.recurring),
     budgets: { ...incoming.budgets, ...base.budgets },
   };
-}
-
-export function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return emptyState();
-    return normalizeState(JSON.parse(raw));
-  } catch (err) {
-    console.error("Não foi possível ler os dados salvos:", err);
-    return emptyState();
-  }
-}
-
-const saveListeners = new Set();
-
-// Lets other modules (the file backup) react after every successful save
-// without storage.js having to know about them.
-export function onStateSaved(listener) {
-  saveListeners.add(listener);
-  return () => saveListeners.delete(listener);
-}
-
-export function saveState(state) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (err) {
-    console.error("Não foi possível salvar os dados:", err);
-    alert("Não foi possível salvar. O armazenamento do navegador pode estar cheio ou bloqueado.");
-    return;
-  }
-  for (const listener of saveListeners) {
-    try {
-      listener(state);
-    } catch (err) {
-      console.error("Falha ao notificar o backup:", err);
-    }
-  }
 }
 
 export function parseAmount(raw) {
